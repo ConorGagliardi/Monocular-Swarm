@@ -1,73 +1,51 @@
-import setup_path 
 from collections import deque
-from imutils.video import VideoStream
-import airsim
+from djitellopy import Tello
 import cv2
 import numpy as np
 import argparse
-import pprint
 import imutils
 
 import simplemoves as sm
 
-
-drone = "Drone1"
-
-
+# Argument parsing setup
 ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video",
-                help="path to the (optional) video file")
 ap.add_argument("-b", "--buffer", type=int, default=64,
                 help="max buffer size")
 args = vars(ap.parse_args())
 
-# connect to the AirSim simulator
-client = airsim.MultirotorClient()
-client.confirmConnection()
-client.enableApiControl(True, drone)
-client.armDisarm(True, drone)
+# Initialize Tello drone
+drone = Tello()
+drone.connect()
+drone.streamon()
 
-# set camera name and image type to request images and detections
-camera_name = "0"
-image_type = airsim.ImageType.Scene
+# Open the video stream
+video = cv2.VideoCapture(0)
 
+greenLower = (29, 86, 6)
+greenUpper = (64, 255, 255)
+pts = deque(maxlen=args["buffer"])
 
 while True:
-    rawImage = client.simGetImage(camera_name, image_type)
-   
-    if not rawImage:
-        continue
-    png = cv2.imdecode(airsim.string_to_uint8_array(rawImage), cv2.IMREAD_UNCHANGED)
-
     
-
-    greenLower = (29, 86, 6)
-    greenUpper = (64, 255, 255)
-
-    pts = deque(maxlen=args["buffer"])
+    ret, png = video.read()
 
     if png is None:
-        break
+        continue
 
-    
     blurred = cv2.GaussianBlur(png, (11, 11), 0)
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
     mask = cv2.inRange(hsv, greenLower, greenUpper)
+
     cv2.imshow("mask", mask)
 
-    
-
-    # mask = cv2.erode(mask, None, iterations=2)
-    # mask = cv2.dilate(mask, None, iterations=2)
-
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-		cv2.CHAIN_APPROX_SIMPLE)
+                            cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     center = None
 
-    position = (0,0)
-    
+    position = (0, 0)
+
     if len(cnts) > 0:
         c = max(cnts, key=cv2.contourArea)
         ((x, y), radius) = cv2.minEnclosingCircle(c)
@@ -135,39 +113,39 @@ while True:
             line_color_upper = (0, 0, 255)
 
             #attempt to remediate
-            sm.move_up(client, drone, 1, 1)
+            sm.move_up(drone, 1)
             
         elif y > lower:
             status = 'Below'
             line_color_lower = (0, 0, 255)
 
             #attempt to remediate
-            sm.move_down(client, drone, 1, 1)
+            sm.move_down(drone, 1)
             
         elif x < left:
             status = 'Left'
             line_color_left = (0, 0, 255)
 
             #attempt to remediate
-            sm.move_left(client, drone, 1, 1)
+            sm.move_left(drone, 1)
             
         elif x > right:
             status = 'Right'
             line_color_right = (0, 0, 255) 
 
             #attempt to remediate
-            sm.move_right(client, drone, 1, 1)
+            sm.move_right(drone, 1)
 
         elif radius < 2:
             status = 'too far'
 
             #attempt to remediate
-            sm.move_forward(client, drone, 1, 1)
+            sm.move_forward(drone, 1)
 
         elif radius > 5:
             status = 'too close'
 
-            sm.move_backward(client, drone, 1, 1)
+            sm.move_backward(drone, 1)
 
             
         else:
@@ -201,14 +179,10 @@ while True:
     cv2.imshow("AirSim", resized)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-    elif cv2.waitKey(1) & 0xFF == ord('c'):
-        client.simClearDetectionMeshNames(camera_name, image_type)
-    elif cv2.waitKey(1) & 0xFF == ord('a'):
-        client.simAddDetectionFilterMeshName(camera_name, image_type, "Sphere*")
-
-
-    
     
 
-
-cv2.destroyAllWindows() 
+# Release resources
+video.release()
+cv2.destroyAllWindows()
+drone.streamoff()
+drone.land()
