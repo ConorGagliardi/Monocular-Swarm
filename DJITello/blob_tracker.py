@@ -5,11 +5,11 @@ import numpy as np
 import argparse
 import imutils
 
-import simplemoves as sm
+from simplemoves import *
 
 # Argument parsing setup
 ap = argparse.ArgumentParser()
-ap.add_argument("-b", "--buffer", type=int, default=64,
+ap.add_argument("-b", "--buffer", type=int, default=32,
                 help="max buffer size")
 args = vars(ap.parse_args())
 
@@ -19,25 +19,38 @@ drone.connect()
 drone.streamon()
 
 # Open the video stream
-video = cv2.VideoCapture(0)
+frame_read = drone.get_frame_read()
+
+
+drone.takeoff() # start by flying
 
 greenLower = (29, 86, 6)
 greenUpper = (64, 255, 255)
 pts = deque(maxlen=args["buffer"])
 
+scaler = 0.25
+
+
 while True:
     
-    ret, png = video.read()
+    raw_png = frame_read.frame
 
-    if png is None:
-        continue
+    width = int(raw_png.shape[1] * scaler)
+    height = int(raw_png.shape[0] * scaler)
+    png = cv2.resize(raw_png, (width, height), interpolation= cv2.INTER_AREA)
 
-    blurred = cv2.GaussianBlur(png, (11, 11), 0)
-    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+
+    # if png is None:
+    #     continue
+
+    #blurred = cv2.GaussianBlur(png, (11, 11), 0)
+    # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+
+    hsv = cv2.cvtColor(png, cv2.COLOR_BGR2HSV)
 
     mask = cv2.inRange(hsv, greenLower, greenUpper)
 
-    cv2.imshow("mask", mask)
+    #cv2.imshow("mask", mask)
 
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
@@ -45,6 +58,8 @@ while True:
     center = None
 
     position = (0, 0)
+
+    status = ""
 
     if len(cnts) > 0:
         c = max(cnts, key=cv2.contourArea)
@@ -61,19 +76,20 @@ while True:
         print("Detected Radius: ")
         print(radius)
 
-        if radius > 100:
-            break
+        if radius < 20:
+            status = 'No Detection'
+            continue
 
         position=center
         
-        if radius > 0.5:
+        if radius > 20:
             cv2.circle(png, center, int(radius), (128, 0, 255), -1)
 
-            cv2.circle(png, center, 2,
-                       (0, 255, 255), 1)
+            cv2.circle(png, center, 30,
+                       (0, 255, 255), 2)
             
-            cv2.circle(png, center, 6,
-                       (0, 255, 255), 1)
+            cv2.circle(png, center, 45,
+                       (0, 255, 255), 2)
             
     #establish tracking boundary
     color = (255, 255, 255)  # color of the grid lines
@@ -97,7 +113,7 @@ while True:
     left = tile_width
     right = tile_width * 2
 
-    status = ""
+    
     
     line_color_left = (255, 255, 255)
     line_color_right = (255, 255, 255)
@@ -113,39 +129,39 @@ while True:
             line_color_upper = (0, 0, 255)
 
             #attempt to remediate
-            sm.move_up(drone, 1)
+            move_up(drone, 1)
             
         elif y > lower:
             status = 'Below'
             line_color_lower = (0, 0, 255)
 
             #attempt to remediate
-            sm.move_down(drone, 1)
+            move_down(drone, 1)
             
         elif x < left:
             status = 'Left'
             line_color_left = (0, 0, 255)
 
             #attempt to remediate
-            sm.move_left(drone, 1)
+            move_left(drone, 1)
             
         elif x > right:
             status = 'Right'
             line_color_right = (0, 0, 255) 
 
             #attempt to remediate
-            sm.move_right(drone, 1)
+            move_right(drone, 1)
 
-        elif radius < 2:
+        elif radius < 30:
             status = 'too far'
 
             #attempt to remediate
-            sm.move_forward(drone, 1)
+            move_forward(drone, 1)
 
-        elif radius > 5:
+        elif radius > 45:
             status = 'too close'
 
-            sm.move_backward(drone, 1)
+            move_backward(drone, 1)
 
             
         else:
@@ -164,15 +180,15 @@ while True:
     cv2.putText(png, status, (10, 20), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
             
-    pts.appendleft(center)
+    # pts.appendleft(center)
 
-    for i in range(1, len(pts)):
-        if pts[i - 1] is None or pts[i] is None:
-            continue
-        thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-        cv2.line(png, pts[i - 1], pts[i], (0, 0, 255), thickness)
+    # for i in range(1, len(pts)):
+    #     if pts[i - 1] is None or pts[i] is None:
+    #         continue
+    #     thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
+    #     cv2.line(png, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
-    scaler = 2.5
+    scaler = 1.5
     width = int(png.shape[1] * scaler)
     height = int(png.shape[0] * scaler)
     resized = cv2.resize(png, (width, height), interpolation= cv2.INTER_AREA)
@@ -182,7 +198,10 @@ while True:
     
 
 # Release resources
-video.release()
+
 cv2.destroyAllWindows()
 drone.streamoff()
-drone.land()
+try:
+    drone.land()
+except:
+    print("not flying")
