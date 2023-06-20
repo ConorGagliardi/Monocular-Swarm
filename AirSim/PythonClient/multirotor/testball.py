@@ -51,7 +51,11 @@ while True:
 
     
     blurred = cv2.GaussianBlur(png, (11, 11), 0)
+    cv2.imshow("blurred", blurred)
+
+
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    cv2.imshow("hsv", hsv)
 
     mask = cv2.inRange(hsv, greenLower, greenUpper)
     cv2.imshow("mask", mask)
@@ -186,13 +190,13 @@ while True:
     cv2.putText(png, status, (10, 20), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
             
-    pts.appendleft(center)
+    # pts.appendleft(center)
 
-    for i in range(1, len(pts)):
-        if pts[i - 1] is None or pts[i] is None:
-            continue
-        thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-        cv2.line(png, pts[i - 1], pts[i], (0, 0, 255), thickness)
+    # for i in range(1, len(pts)):
+    #     if pts[i - 1] is None or pts[i] is None:
+    #         continue
+    #     thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
+    #     cv2.line(png, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
     scaler = 2.5
     width = int(png.shape[1] * scaler)

@@ -120,6 +120,12 @@ class DroneController:
 				elif self.current_key.char == 's':
 					print("backward")
 					sm.move_backward(self.client, self.drone_name, 1)
+				elif self.current_key.char == 'a':
+					print("left turn")
+					sm.rotate_left(self.client, self.drone_name)
+				elif self.current_key.char == 'd':
+					print("right turn")
+					sm.rotate_right(self.client, self.drone_name)
 			elif isinstance(self.current_key, keyboard.Key):  # Check if the key is a special key
 				if self.current_key == keyboard.Key.up:
 					print("up")

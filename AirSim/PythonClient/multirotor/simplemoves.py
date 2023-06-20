@@ -45,3 +45,14 @@ def move_left(client, drone_name, distance, speed=1):
     drone_state = client.getMultirotorState(vehicle_name=drone_name)
     current_pos = drone_state.kinematics_estimated.position
     client.moveToPositionAsync(current_pos.x_val, current_pos.y_val - distance, current_pos.z_val, speed, vehicle_name=drone_name).join()
+
+def rotate_right(client, drone_name, yaw_rate=10, angle=5):
+    duration = abs(angle / yaw_rate)
+    client.rotateByYawRateAsync(yaw_rate, duration, vehicle_name=drone_name).join()
+
+def rotate_left(client, drone_name, yaw_rate=10, angle=5):
+    duration = abs(angle / yaw_rate)
+    client.rotateByYawRateAsync(-yaw_rate, duration, vehicle_name=drone_name).join()
+
+
+
