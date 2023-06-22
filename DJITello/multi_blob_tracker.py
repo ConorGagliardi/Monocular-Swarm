@@ -83,19 +83,19 @@ while True:
         print("Detected Radius: ")
         print(radius)
 
-        if radius < 20:
+        if radius <= 15:
             status = 'No Detection'
             continue
 
         position=center
         
-        if radius > 20:
+        if radius > 15:
             cv2.circle(png, center, int(radius), (128, 0, 255), -1)
 
-            cv2.circle(png, center, 30,
+            cv2.circle(png, center, 25,
                        (0, 255, 255), 2)
             
-            cv2.circle(png, center, 45,
+            cv2.circle(png, center, 35,
                        (0, 255, 255), 2)
             
     #establish tracking boundary
