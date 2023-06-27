@@ -54,16 +54,17 @@ class QuadController:
         #drone.takeoff()
 
     def start_video(self):
-        self.video_thread = threading.Thread(target=self.img_tracker, args=(self.drone,))
-        self.video_thread.start()
+        #self.video_thread = threading.Thread(target=self.img_tracker, args=(self.drone,))
+        #self.video_thread.start()
+        pass
 
     def start_movements(self):
         self.command_thread = threading.Thread(target=self.send_movements, args=(self.drone,))
         self.command_thread.start()
 
-    def img_tracker(self, drone):
+    def img_tracker(self):
         while self.running:
-            frame_read = drone.get_frame_read()
+            frame_read = self.drone.get_frame_read()
 
             if not frame_read:
                 time.sleep(0.1)
@@ -72,8 +73,8 @@ class QuadController:
             raw_png = frame_read.frame
 
 
-            width = int(raw_png.shape[1] * 0.25)
-            height = int(raw_png.shape[0] * 0.25)
+            width = int(raw_png.shape[1] * 0.7)
+            height = int(raw_png.shape[0] * 0.7)
             png = cv2.resize(raw_png, (width, height), interpolation= cv2.INTER_AREA)
             
 
@@ -185,6 +186,8 @@ class QuadController:
             resized = cv2.resize(png, (width, height), interpolation= cv2.INTER_AREA)
             cv2.imshow("AirSim", resized)
 
+            cv2.imwrite
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.stop()
             
@@ -286,7 +289,7 @@ def main():
 
     quad = QuadController(args)
 
-    quad.start_video()
+    quad.img_tracker()
 
     #quad.start_movements()
 
