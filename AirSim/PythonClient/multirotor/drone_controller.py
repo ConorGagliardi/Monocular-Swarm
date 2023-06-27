@@ -110,16 +110,19 @@ class DroneController:
 		self.current_key = None
 
 	def movement_loop(self):
+
+		distance = 1
+
 		while True:
 			if self.breakout:  
 				break
 			if isinstance(self.current_key, keyboard.KeyCode):  # Check if the key is a regular character
 				if self.current_key.char == 'w':
 					print("forward")
-					sm.move_forward(self.client, self.drone_name, 1)
+					sm.move_forward(self.client, self.drone_name, distance)
 				elif self.current_key.char == 's':
 					print("backward")
-					sm.move_backward(self.client, self.drone_name, 1)
+					sm.move_backward(self.client, self.drone_name, distance)
 				elif self.current_key.char == 'a':
 					print("left turn")
 					sm.rotate_left(self.client, self.drone_name)
@@ -129,16 +132,16 @@ class DroneController:
 			elif isinstance(self.current_key, keyboard.Key):  # Check if the key is a special key
 				if self.current_key == keyboard.Key.up:
 					print("up")
-					sm.move_up(self.client, self.drone_name, 1)
+					sm.move_up(self.client, self.drone_name, distance)
 				elif self.current_key == keyboard.Key.down:
 					print("down")
-					sm.move_down(self.client, self.drone_name, 1)
+					sm.move_down(self.client, self.drone_name, distance)
 				elif self.current_key == keyboard.Key.left:
 					print("left")
-					sm.move_left(self.client, self.drone_name, 1)
+					sm.move_left(self.client, self.drone_name, distance)
 				elif self.current_key == keyboard.Key.right:
 					print("right")
-					sm.move_right(self.client, self.drone_name, 1)
+					sm.move_right(self.client, self.drone_name, distance)
 
 			
 			time.sleep(0.1)
