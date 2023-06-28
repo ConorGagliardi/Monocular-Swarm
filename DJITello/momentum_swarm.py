@@ -1,5 +1,4 @@
 from collections import deque
-from collections import deque
 from djitellopy import Tello
 import threading
 import cv2
@@ -186,7 +185,6 @@ class QuadController:
             resized = cv2.resize(png, (width, height), interpolation= cv2.INTER_AREA)
             cv2.imshow("AirSim", resized)
 
-            cv2.imwrite
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.stop()
