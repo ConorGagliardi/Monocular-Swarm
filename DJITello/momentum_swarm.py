@@ -50,15 +50,17 @@ class QuadController:
 
         self.running = True
 
-        #drone.takeoff()
+        self.drone.takeoff()
+
+        
 
     def start_video(self):
-        #self.video_thread = threading.Thread(target=self.img_tracker, args=(self.drone,))
-        #self.video_thread.start()
-        pass
+        self.video_thread = threading.Thread(target=self.img_tracker, args=(self.drone,))
+        self.video_thread.start()
+        # pass
 
     def start_movements(self):
-        self.command_thread = threading.Thread(target=self.send_movements, args=(self.drone,))
+        self.command_thread = threading.Thread(target=self.send_movements)
         self.command_thread.start()
 
     def img_tracker(self):
@@ -190,8 +192,8 @@ class QuadController:
                 self.stop()
             
             
-    def send_movements(self, client):
-        speed = 1
+    def send_movements(self):
+
         distance = 1
         while self.running:
             
@@ -210,14 +212,14 @@ class QuadController:
                         print('forward')
 
                         #attempt to remediate
-                        sm.move_forward(client, self.drone, distance, speed)
+                        sm.move_forward(self.drone, distance)
 
                     elif self.radius > self.max_radius:
                         self.status = 'too close'
                         print('reverse!')
 
                         #attempt to remediate
-                        sm.move_backward(client, self.drone, distance, speed)
+                        sm.move_backward(self.drone, distance)
 
                     elif y < self.upper:
                         self.status = 'Moving Up'
@@ -225,7 +227,7 @@ class QuadController:
                         print('up')
 
                         #attempt to remediate
-                        sm.move_up(client, self.drone, distance, speed)
+                        sm.move_up(self.drone, distance)
                         
                     elif y > self.lower:
                         self.status = 'Moving Down'
@@ -234,7 +236,7 @@ class QuadController:
 
 
                         #attempt to remediate
-                        sm.move_down(client, self.drone, distance, speed)
+                        sm.move_down(self.drone, distance)
                         
                     elif x < self.left:
                         self.status = 'Moving Left'
@@ -243,7 +245,7 @@ class QuadController:
 
 
                         #attempt to remediate
-                        sm.move_left(client, self.drone, distance, speed)
+                        sm.move_left(self.drone, distance)
                         
                     elif x > self.right:
                         self.status = 'Moving Right'
@@ -252,25 +254,26 @@ class QuadController:
 
 
                         #attempt to remediate
-                        sm.move_right(client, self.drone, 1, speed)
+                        sm.move_right(self.drone, 1)
 
 
                         
                     else:
                         self.status = 'Center'
-                        time.sleep(0.05)
+                        time.sleep(0.1)
                 else:
                     self.status = 'No Detection'
-                    time.sleep(0.05)
+                    time.sleep(0.1)
 
         
 
     def stop(self):
         self.running = False
+        self.drone.land()
         if threading.current_thread() != self.command_thread:
             self.command_thread.join()
-        if threading.current_thread() != self.video_thread:
-            self.video_thread.join()
+        # if threading.current_thread() != self.video_thread:
+        #     self.video_thread.join()
         cv2.destroyAllWindows()
 
 def main():
@@ -287,9 +290,11 @@ def main():
 
     quad = QuadController(args)
 
+    quad.start_movements()
+
     quad.img_tracker()
 
-    #quad.start_movements()
+
 
     #quad.stop()
 
