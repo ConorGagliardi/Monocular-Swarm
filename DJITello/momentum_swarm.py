@@ -38,8 +38,8 @@ class QuadController:
         self.status = ""
 
         self.radius = 0
-        self.min_radius = 7
-        self.max_radius = 20
+        self.min_radius = 12
+        self.max_radius = 30
         self.position = (0,0)
         self.prj_position = (0,0)
 
@@ -111,7 +111,7 @@ class QuadController:
                 # print("Detected Radius: ")
                 # print(radius)
 
-                if radius > 2:
+                if radius > 5:
                     cv2.circle(png, center, int(radius), (128, 0, 255), -1)
 
                     cv2.circle(png, center, self.min_radius, (0, 255, 255), 2)
@@ -152,12 +152,12 @@ class QuadController:
                 # weight vector with highest weight first
                 weights = np.flip(np.arange(len(vec_list)) + 1)
 
-                print(weights)
+                #print(weights)
 
                 avg_velocity = np.rint(np.average(vec_list, axis = 0, weights=weights))
 
                 # print("AVERGAGE VEOLOCITY")
-                print(avg_velocity)
+                #print(avg_velocity)
 
                 try:
                     pt_2 = (int(center[0]-avg_velocity[0]), int(center[1]-avg_velocity[1]))
@@ -181,7 +181,7 @@ class QuadController:
 
             center_box_size = (int(width * center_box_scale), int(height * center_box_scale))  
             center_box_position = (int((width - center_box_size[0]) * 0.5 * (1 + center_box_position_offset[0])), 
-                            int((height - center_box_size[1]) * 0.5 * (1 + center_box_position_offset[1])))  # top left corner of the center box
+                            int((height - center_box_size[1]) * 0.5 * (1 + center_box_position_offset[1])))  # top left corner
 
             # vertical lines
             cv2.line(png, (center_box_position[0], 0), (center_box_position[0], height), color, 1)
