@@ -222,10 +222,7 @@ class QuadController:
 
         while self.running:
             
-            self.line_color_left = (255, 255, 255)
-            self.line_color_right = (255, 255, 255)
-            self.line_color_upper = (255, 255, 255)
-            self.line_color_lower = (255, 255, 255)
+            
 
             if self.position is not None:
                 x, y = self.position
@@ -236,37 +233,63 @@ class QuadController:
 
                     if self.radius < self.min_radius:
                         self.status = 'too far'
-                        
+                        self.line_color_left = (255, 255, 255)
+                        self.line_color_right = (255, 255, 255)
+                        self.line_color_upper = (255, 255, 255)
+                        self.line_color_lower = (255, 255, 255)
 
                     elif self.radius > self.max_radius:
                         self.status = 'too close'
-                        
+                        self.line_color_left = (255, 255, 255)
+                        self.line_color_right = (255, 255, 255)
+                        self.line_color_upper = (255, 255, 255)
+                        self.line_color_lower = (255, 255, 255)
 
                     elif y < self.upper:
                         self.status = 'Moving Up'
+                        self.line_color_left = (255, 255, 255)
+                        self.line_color_right = (255, 255, 255)
                         self.line_color_upper = (0, 0, 255)
+                        self.line_color_lower = (255, 255, 255)
 
                         
                     elif y > self.lower:
                         self.status = 'Moving Down'
+                        self.line_color_left = (255, 255, 255)
+                        self.line_color_right = (255, 255, 255)
+                        self.line_color_upper = (255, 255, 255)
                         self.line_color_lower = (0, 0, 255)
 
                         
                     elif x < self.left:
                         self.status = 'Moving Left'
                         self.line_color_left = (0, 0, 255)
+                        self.line_color_right = (255, 255, 255)
+                        self.line_color_upper = (255, 255, 255)
+                        self.line_color_lower = (255, 255, 255)
 
                         
                     elif x > self.right:
                         self.status = 'Moving Right'
+                        self.line_color_left = (255, 255, 255)
                         self.line_color_right = (0, 0, 255)
+                        self.line_color_upper = (255, 255, 255)
+                        self.line_color_lower = (255, 255, 255)
 
                         
                     else:
                         self.status = 'Center'
+                        self.line_color_left = (255, 255, 255)
+                        self.line_color_right = (255, 255, 255)
+                        self.line_color_upper = (255, 255, 255)
+                        self.line_color_lower = (255, 255, 255)
                         time.sleep(0.1)
                 else:
                     self.status = 'No Detection'
+                    self.line_color_left = (255, 255, 255)
+                    self.line_color_right = (255, 255, 255)
+                    self.line_color_upper = (255, 255, 255)
+                    self.line_color_lower = (255, 255, 255)
                     time.sleep(0.1)
 
         
