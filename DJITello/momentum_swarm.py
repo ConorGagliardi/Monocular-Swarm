@@ -60,8 +60,11 @@ class QuadController:
         # pass
 
     def start_movements(self):
-        self.command_thread = threading.Thread(target=self.send_movements)
+        self.command_thread = threading.Thread(target=self.detect_movements)
         self.command_thread.start()
+
+        self.order_thread = threading.Thread(target=self.send_movements)
+        self.order_thread.start()
 
     def img_tracker(self):
         while self.running:
@@ -102,13 +105,13 @@ class QuadController:
                     print("tried to divide by zero OOPS")
                     center = (png.shape[1] // 2, png.shape[0] // 2)
 
-                print("center coords: ")
-                print(center)
+                # print("center coords: ")
+                # print(center)
 
-                print("Detected Radius: ")
-                print(radius)
+                # print("Detected Radius: ")
+                # print(radius)
 
-                if radius > 5:
+                if radius > 2:
                     cv2.circle(png, center, int(radius), (128, 0, 255), -1)
 
                     cv2.circle(png, center, self.min_radius, (0, 255, 255), 2)
@@ -130,19 +133,42 @@ class QuadController:
                 avg_velocity = np.rint(np.nanmean(vec_list, axis = 0))
 
 
-                print("AVERGAGE VEOLOCITY")
-                print(avg_velocity)
+                # print("AVERGAGE VEOLOCITY")
+                # print(avg_velocity)
 
                 try:
 
                     pt_2 = (int(center[0]-avg_velocity[0]), int(center[1]-avg_velocity[1]))
 
-                    self.prj_position = pt_2
+                    # self.prj_position = pt_2
 
                     cv2.arrowedLine(png, center, pt_2, (255, 255, 25), 2)
                 except:
                     print("found NaN")
                 
+            if len(past_points) > skip:
+                vec_list = np.diff(past_points[::skip], axis = 0) * scalar
+                            
+                # weight vector with highest weight first
+                weights = np.flip(np.arange(len(vec_list)) + 1)
+
+                print(weights)
+
+                avg_velocity = np.rint(np.average(vec_list, axis = 0, weights=weights))
+
+                # print("AVERGAGE VEOLOCITY")
+                print(avg_velocity)
+
+                try:
+                    pt_2 = (int(center[0]-avg_velocity[0]), int(center[1]-avg_velocity[1]))
+
+                    self.prj_position = pt_2
+
+                    cv2.arrowedLine(png, center, pt_2, (25, 255, 25), 2)
+                except:
+                    print("found NaN")
+
+
 
             #establish tracking boundary
             color = (255, 255, 255)  # color of the grid lines
@@ -192,9 +218,8 @@ class QuadController:
                 self.stop()
             
             
-    def send_movements(self):
+    def detect_movements(self):
 
-        distance = 1
         while self.running:
             
             self.line_color_left = (255, 255, 255)
@@ -205,57 +230,36 @@ class QuadController:
             if self.position is not None:
                 x, y = self.position
                 if self.prj_position is not None:
+                    print('Using projected position!')
                     x, y = self.prj_position
                 if x != 0 and y != 0:
+
                     if self.radius < self.min_radius:
                         self.status = 'too far'
-                        print('forward')
-
-                        #attempt to remediate
-                        sm.move_forward(self.drone, distance)
+                        
 
                     elif self.radius > self.max_radius:
                         self.status = 'too close'
-                        print('reverse!')
-
-                        #attempt to remediate
-                        sm.move_backward(self.drone, distance)
+                        
 
                     elif y < self.upper:
                         self.status = 'Moving Up'
                         self.line_color_upper = (0, 0, 255)
-                        print('up')
 
-                        #attempt to remediate
-                        sm.move_up(self.drone, distance)
                         
                     elif y > self.lower:
                         self.status = 'Moving Down'
                         self.line_color_lower = (0, 0, 255)
-                        print('down')
 
-
-                        #attempt to remediate
-                        sm.move_down(self.drone, distance)
                         
                     elif x < self.left:
                         self.status = 'Moving Left'
                         self.line_color_left = (0, 0, 255)
-                        print('left')
 
-
-                        #attempt to remediate
-                        sm.move_left(self.drone, distance)
                         
                     elif x > self.right:
                         self.status = 'Moving Right'
                         self.line_color_right = (0, 0, 255)
-                        print('right')
-
-
-                        #attempt to remediate
-                        sm.move_right(self.drone, 1)
-
 
                         
                     else:
@@ -266,12 +270,52 @@ class QuadController:
                     time.sleep(0.1)
 
         
+    def send_movements(self):
+        distance = 1
+        while self.running:
+            if self.position is not None:
+                if self.status is not None:
+
+                    if self.status == 'too far':
+                        print('forward')
+                        sm.move_forward(self.drone, distance)
+
+                    elif self.status == 'too close':
+                        print('reverse!')
+                        sm.move_backward(self.drone, distance)
+
+                    elif self.status == 'Moving Up':
+                        print('up')
+                        sm.move_up(self.drone, distance)
+                        
+                    elif self.status == 'Moving Down':
+                        print('down')
+                        sm.move_down(self.drone, distance)
+                        
+                    elif self.status == 'Moving Left':
+                        print('left')
+                        sm.move_left(self.drone, distance)
+                        
+                    elif self.status == 'Moving Right':
+                        print('right')
+                        sm.move_right(self.drone, 1)
+
+
+                        
+                    else:
+                        
+                        time.sleep(0.1)
+                else:
+                    
+                    time.sleep(0.1)
 
     def stop(self):
         self.running = False
         self.drone.land()
         if threading.current_thread() != self.command_thread:
             self.command_thread.join()
+        if threading.current_thread() != self.order_thread:
+            self.order_thread.join()
         # if threading.current_thread() != self.video_thread:
         #     self.video_thread.join()
         cv2.destroyAllWindows()
