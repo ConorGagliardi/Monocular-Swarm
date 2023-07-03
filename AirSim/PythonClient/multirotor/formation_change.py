@@ -52,6 +52,7 @@ class QuadController:
         self.formation = "TRIANGLE"
         self.breakout = False
         self.current_key = None
+        self.two_blobs = False
 
         self.radius = 0
         self.min_radius = 7
@@ -143,7 +144,17 @@ class QuadController:
             center = None
 
             if len(cnts) > 0:
+                print("contours:")
+                print(len(cnts))
                 c = max(cnts, key=cv2.contourArea)
+                sorted_cnts = [c]
+                if len(cnts) > 1:
+                    sorted_cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+                    ((_, __), tmp_radius) = cv2.minEnclosingCircle(sorted_cnts[1])
+                    if tmp_radius > 1:
+                        self.two_blobs = True
+                else:
+                    self.two_blobs = False
                 ((x, y), radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
 
@@ -268,9 +279,10 @@ class QuadController:
             #if changing to line
             if self.formation == "LINE":
                 self.bounding_box_xy = (0, 0)
-                sm.move_backward(client, self.drone, 3, 3)
-                time.sleep(1)
-                sm.move_left(client, self.drone, 1.5, 1.5)
+                sm.move_backward(client, self.drone, 4, 4)
+                time.sleep(2)
+                if self.two_blobs:
+                    sm.move_left(client, self.drone, 2, 2)
 
             if self.formation == "TRIANGLE":
                 self.bounding_box_xy = self.args["position"]
