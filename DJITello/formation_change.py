@@ -137,6 +137,8 @@ class QuadController:
             cnts = imutils.grab_contours(cnts)
             center = None
 
+            radius = 0.001
+
             if len(cnts) > 0:
                 c = max(cnts, key=cv2.contourArea)
                 ((x, y), radius) = cv2.minEnclosingCircle(c)
@@ -175,6 +177,7 @@ class QuadController:
             past_points = np.array(self.pts)
 
             skip = 3
+            
             scalar = 8 / radius
 
             if len(past_points) > skip:
@@ -278,12 +281,12 @@ class QuadController:
             #if changing to line
             if self.formation == "LINE":
                 self.bounding_box_xy = (0,0)
-                sm.move_right(self.drone, 1.5)
+                sm.move_right(self.drone, 2)
                 time.sleep(1)
 
             if self.formation == "TRIANGLE":
                 self.bounding_box_xy = self.args["position"]
-                sm.move_left(self.drone, 1.5)
+                sm.move_left(self.drone, 2)
                 time.sleep(1)
 
 
@@ -300,9 +303,9 @@ class QuadController:
 
             if self.formation == "TRIANGLE":
                 self.bounding_box_xy = self.args["position"]
-                sm.move_right(self.drone, 1.5)
+                sm.move_right(self.drone, 2)
                 time.sleep(1)
-                sm.move_forward(self.drone, 3.5)
+                sm.move_forward(self.drone, 4)
             
             
     def detect_movements(self):
@@ -473,7 +476,7 @@ def main():
 
     quad.img_tracker()
 
-
+    quad.drone.land()
 
     quad.stop()
 
