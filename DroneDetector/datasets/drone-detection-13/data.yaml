@@ -1,0 +1,12 @@
+names:
+- drone
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: drone-detection-04s7b
+  url: https://universe.roboflow.com/project-tiamr/drone-detection-04s7b/dataset/13
+  version: 13
+  workspace: project-tiamr
+test: test/images
+train: train/images
+val: valid/images

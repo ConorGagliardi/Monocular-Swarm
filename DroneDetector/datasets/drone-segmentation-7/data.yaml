@@ -1,0 +1,12 @@
+names:
+- drone
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: drone-segmentation
+  url: https://universe.roboflow.com/final-project-l4xyd/drone-segmentation/dataset/7
+  version: 7
+  workspace: final-project-l4xyd
+test: ../test/images
+train: drone-segmentation-7/train/images
+val: drone-segmentation-7/valid/images

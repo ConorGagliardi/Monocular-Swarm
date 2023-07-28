@@ -1,0 +1,12 @@
+names:
+- UAV
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: uav-detect-pfiqs
+  url: https://universe.roboflow.com/get/uav-detect-pfiqs/dataset/1
+  version: 1
+  workspace: get
+test: test/images
+train: train/images
+val: valid/images

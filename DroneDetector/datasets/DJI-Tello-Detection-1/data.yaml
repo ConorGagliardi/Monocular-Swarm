@@ -1,0 +1,12 @@
+names:
+- drone
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: dji-tello-detection
+  url: https://universe.roboflow.com/finalproject-2dp9b/dji-tello-detection/dataset/1
+  version: 1
+  workspace: finalproject-2dp9b
+test: test/images
+train: train/images
+val: valid/images
